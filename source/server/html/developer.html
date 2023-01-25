@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matchmaker - Developer Tools</title>
+    <style>
+      body {
+        margin: 0 auto;
+        max-width: 600px;
+      }
+
+      * {
+        font-family: monospace;
+      }
+
+      button {
+        border: none;
+        background-color: blue;
+        color: white;
+        margin-bottom: 5px;
+      }
+
+      .button-danger {
+        background-color: red;
+      }
+
+      button:hover {
+        cursor: pointer;
+        filter: invert(1);
+      }
+
+      label {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>Developer Tools 👩‍💻</h1>
+      <p>
+        This page is for developers to test the API. It is not intended for
+        regular users. These tools will not work unless you know the shared
+        secret or have configured the server to skip authentication.
+      </p>
+      <p>
+        Keep your browser's developer tools open to see the response from the
+        API.
+      </p>
+    </div>
+    <hr />
+    <p id="inputs">
+      <label for="shared_secret"
+        ><abbr title="This is set during server configuration!"
+          >Shared Secret:</abbr
+        ></label
+      >
+      <input type="password" name="shared_secret" id="shared_secret_input" />
+    </p>
+    <hr />
+    <button>Get Hits</button>
+    <button>Get Profile Count</button>
+    <button>Create Profile</button>
+    <button>Get Profile</button>
+    <button>Update Profile</button>
+    <button>Get Profile Suggestions</button>
+    <button class="button-danger">Reset Database</button>
+  </body>
+  <script>
+    // detect button clicks
+    document.addEventListener("click", (event) => {
+      if (event.target.tagName === "BUTTON") {
+        // get the button's name
+        const buttonName = event.target.innerText;
+
+        // get the shared secret
+        const sharedSecret = document.getElementById(
+          "shared_secret_input"
+        ).value;
+
+        // send a request to the API depending on the button's name
+        switch (buttonName) {
+          case "Get Hits":
+            (() => {
+              fetch("/api/hits", {
+                headers: {
+                  "matchmaker-ignorehit": "true",
+                },
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.info(data);
+                });
+            })();
+            break;
+          case "Get Profile Count":
+            (() => {
+              fetch(`/api/profiles/count`)
+                .then((response) => response.json())
+                .then((data) => {
+                  console.info(data);
+                });
+            })();
+            break;
+          case "Create Profile":
+            (() => {
+              const randomDiscordId = Math.floor(Math.random() * 10000000000);
+
+              const randomFavouriteColour = [
+                "red",
+                "orange",
+                "yellow",
+                "green",
+                "blue",
+                "purple",
+                "pink",
+                "black",
+                "white",
+                "brown",
+                "grey",
+              ].sort(() => Math.random() - 0.5)[0];
+
+              const randomFavouriteFood = [
+                "pizza",
+                "pasta",
+                "chicken",
+                "beef",
+                "fish",
+                "vegetables",
+                "fruit",
+                "cake",
+                "ice cream",
+                "chocolate",
+                "sweets",
+              ].sort(() => Math.random() - 0.5)[0];
+
+              fetch(`/api/profiles/test_${randomDiscordId}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                  "matchmaker-sharedsecret": sharedSecret,
+                },
+                body: JSON.stringify({
+                  name: `Test User ${randomDiscordId}`,
+                  age: Math.floor(Math.random() * 100),
+                  location: "Mars",
+                  pronouns: "they/them",
+                  bio: "I am a test user using the developer tools.",
+                  favouriteColour: randomFavouriteColour,
+                  favouriteFood: randomFavouriteFood,
+                }),
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.info(data);
+                });
+            })();
+            break;
+          case "Get Profile":
+            (() => {
+              // ask for a profile via alert
+              const profileId = prompt("Enter a profile ID");
+
+              // if the user cancelled the prompt, exit
+              if (profileId === null) {
+                console.warn("User cancelled prompt");
+                return;
+              }
+
+              fetch(`/api/profiles/${profileId}`, {
+                method: "GET",
+                headers: {
+                  "matchmaker-sharedsecret": sharedSecret,
+                },
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.info(data);
+                });
+            })();
+            break;
+          case "Update Profile":
+            (() => {
+              const profileId = prompt("Enter a profile ID");
+              if (profileId === null)
+                return console.warn("User cancelled prompt");
+
+              const fieldToEdit = prompt("Enter a field to edit");
+              if (fieldToEdit === null)
+                return console.warn("User cancelled prompt");
+
+              const valueToUse = prompt("Enter a value to use");
+              if (valueToUse === null)
+                return console.warn("User cancelled prompt");
+
+              fetch(`/api/profiles/${profileId}`, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  "matchmaker-sharedsecret": sharedSecret,
+                },
+                body: JSON.stringify({
+                  [fieldToEdit]: valueToUse,
+                }),
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.info(data);
+                });
+            })();
+            break;
+          case "Get Profile Suggestions":
+            (() => {
+              const profileId = prompt("Enter a profile ID");
+              if (profileId === null)
+                return console.warn("User cancelled prompt");
+
+              fetch(`/api/profiles/${profileId}/suggestions`, {
+                method: "GET",
+                headers: {
+                  "matchmaker-sharedsecret": sharedSecret,
+                },
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.info(data);
+                });
+            })();
+            break;
+          case "Reset Database":
+            (() => {
+              fetch(`/api/developer/reset`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "matchmaker-sharedsecret": sharedSecret,
+                },
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.info(data);
+                });
+            })();
+            break;
+          default:
+            console.error("Unknown button name");
+            break;
+        }
+      }
+    });
+  </script>
+</html>

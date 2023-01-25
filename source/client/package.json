@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "node --watch main.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.7.1"
+  }
+}
