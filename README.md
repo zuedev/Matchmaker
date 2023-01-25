@@ -1,3 +1,6 @@
+> **Warning**
+> This proof-of-concept is still under development.
+
 <h1>
     <a href="https://github.com/zuedev/SvalBot">
         <img width="100" align="left" src="./assets/images/logo_crop_square.png" />
